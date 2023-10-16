@@ -33,6 +33,9 @@ jobs:
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service-account.json
         working-directory: deployments/terraform
 
+      - run: terraform init
+        working-directory: deployments/terraform
+
       - run: terraform validate
         working-directory: deployments/terraform
 
