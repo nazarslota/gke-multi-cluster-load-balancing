@@ -25,7 +25,7 @@ jobs:
         run: |
           terraform init
           terraform validate
-          terraform plan -out=tfplan -input=false
+          terraform plan -out=tfplan
           
           if [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
             terraform workspace new staging || terraform workspace select staging
@@ -39,5 +39,5 @@ jobs:
 
       - name: Apply Terraform
         if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/staging'
-        run: terraform apply tfplan -input=false
+        run: terraform apply tfplan
         working-directory: deployments/terraform
