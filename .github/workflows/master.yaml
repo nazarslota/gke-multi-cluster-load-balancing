@@ -13,18 +13,17 @@ on:
 jobs:
   infrastructure:
     runs-on: ubuntu-latest
+    env:
+      TF_VAR_project: ${{ vars.PROJECT }}
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
     steps:
       - uses: actions/checkout@v4
 
+      - run: echo '${{ secrets.SERVICE_ACCOUNT }}' >> $GOOGLE_APPLICATION_CREDENTIALS
+
       - name: Setup Terraform
         run: |
-          echo "project = \"${{ vars.PROJECT }}\"" >> terraform.tfvars
-          
-          export GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/service-account.json
-          echo "${{ secrets.SERVICE_ACCOUNT }}" >> $GOOGLE_APPLICATION_CREDENTIALS
-          
           terraform init
-          
           if [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
             terraform workspace new staging || terraform workspace select staging
           elif [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
