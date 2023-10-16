@@ -20,8 +20,8 @@ jobs:
         run: |
           echo "project = \"${{ vars.PROJECT }}\"" >> terraform.tfvars
           
-          echo "${{ secrets.SERVICE_ACCOUNT }}" >> service-account.json
-          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service-account.json
+          export GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/service-account.json
+          echo "${{ secrets.SERVICE_ACCOUNT }}" >> $GOOGLE_APPLICATION_CREDENTIALS
           
           terraform init
           
@@ -42,7 +42,4 @@ jobs:
         working-directory: deployments/terraform
 
       - run: terraform apply -auto-approve
-        if: |
-          ${{ github.ref == 'refs/heads/master' }} || 
-          ${{ github.ref == 'refs/heads/staging' }}
         working-directory: deployments/terraform
