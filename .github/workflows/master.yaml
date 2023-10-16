@@ -1,0 +1,46 @@
+name: master
+
+# You should set this env variable in your repository settings:
+#   - vars.PROJECT
+#   - secrets.SERVICE_ACCOUNT
+
+on:
+  push:
+    branches: [ master, staging ]
+  pull_request:
+    branches: [ master, staging ]
+
+jobs:
+  infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            terraform workspace new staging || terraform workspace select staging
+          elif [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            terraform workspace new production || terraform workspace select production
+          else
+            echo "Error: Invalid branch for this workflow." >&2
+            exit 1
+          fi
+          
+          echo "project = \"${{ vars.PROJECT }}\"" >> terraform.tfvars
+          
+          echo "${{ secrets.SERVICE_ACCOUNT }}" >> service-account.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service-account.json
+        working-directory: deployments/terraform
+
+      - run: terraform validate
+        working-directory: deployments/terraform
+
+      - run: terraform plan
+        working-directory: deployments/terraform
+
+      - run: terraform apply -auto-approve
+        if: |
+          ${{ github.ref == 'refs/heads/master' }} || 
+          ${{ github.ref == 'refs/heads/staging' }}
+        working-directory: deployments/terraform
