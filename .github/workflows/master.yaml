@@ -16,6 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - run: terraform init
+        working-directory: deployments/terraform
+
       - name: Setup Terraform
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
@@ -31,9 +34,6 @@ jobs:
           
           echo "${{ secrets.SERVICE_ACCOUNT }}" >> service-account.json
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service-account.json
-        working-directory: deployments/terraform
-
-      - run: terraform init
         working-directory: deployments/terraform
 
       - run: terraform validate
