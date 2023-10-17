@@ -7,6 +7,8 @@ provider "google" {
   project = var.project
 }
 
+data "google_client_config" "provider" {}
+
 # ====================
 # Backend
 # ====================
@@ -36,33 +38,32 @@ locals {
   }
 }
 
-module "ashburn_vpc" {
+module "ashburn_virginia_vpc" {
   source = "./modules/vpc"
 
   name   = local.ashburn.name
   region = replace(local.ashburn.location, "-[a-z]$", "") # Remove zone suffix.
 }
 
-module "ashburn_gke" {
+module "ashburn_virginia_gke" {
   source = "./modules/gke"
 
   name     = local.ashburn.name
   location = local.ashburn.location
 
-  vpc                           = module.ashburn_vpc.vpc
-  subnet                        = module.ashburn_vpc.subnet
-  cluster_secondary_range_name  = module.ashburn_vpc.cluster_secondary_range_name
-  services_secondary_range_name = module.ashburn_vpc.services_secondary_range_name
+  vpc                           = module.ashburn_virginia_vpc.vpc
+  subnet                        = module.ashburn_virginia_vpc.subnet
+  cluster_secondary_range_name  = module.ashburn_virginia_vpc.cluster_secondary_range_name
+  services_secondary_range_name = module.ashburn_virginia_vpc.services_secondary_range_name
 
   depends_on = [
-    module.ashburn_vpc,
+    module.ashburn_virginia_vpc,
   ]
 }
 
 # ====================
 # Artifact
 # ====================
-
 module "artifact_docker_build_push" {
   source = "./modules/artifact/docker-build-push"
 
@@ -74,14 +75,13 @@ module "artifact_docker_build_push" {
   build_number = var.deployment_build
 
   depends_on = [
-    module.ashburn_gke,
+    module.ashburn_virginia_gke,
   ]
 }
 
 # ====================
 # Load Balancer
 # ====================
-
 module "global_load_balancer" {
   source = "./modules/glb/http"
   name   = "global-load-balancer-${terraform.workspace}"

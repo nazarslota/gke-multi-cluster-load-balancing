@@ -1,4 +1,4 @@
-# variables.tf
+# variables.tf.tf
 
 variable "project" {
   description = "The GCP project to deploy to"

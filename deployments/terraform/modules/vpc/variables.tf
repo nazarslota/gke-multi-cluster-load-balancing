@@ -1,4 +1,4 @@
-# modules/vpc/variables.tf
+# modules/vpc/variables.tf.tf
 
 variable "name" {
   description = "Variable that will be used to name all the resources in this example"

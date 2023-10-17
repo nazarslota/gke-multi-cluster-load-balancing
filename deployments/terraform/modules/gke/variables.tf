@@ -1,4 +1,4 @@
-# modules/gke/variables.tf
+# modules/gke/variables.tf.tf
 
 variable "name" {
   description = "The name of the GKE cluster"

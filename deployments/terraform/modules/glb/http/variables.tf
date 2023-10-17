@@ -1,4 +1,4 @@
-# modules/glb/http/variables.tf
+# modules/glb/http/variables.tf.tf
 
 variable "name" {
   description = "Name of the GLB"
