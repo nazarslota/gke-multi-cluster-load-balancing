@@ -83,6 +83,6 @@ module "artifact_docker_build_push" {
 # Load Balancer
 # ====================
 module "global_load_balancer" {
-  source = "./modules/glb/http"
+  source = "./modules/load-balancers/global/http"
   name   = "global-load-balancer-${terraform.workspace}"
 }
