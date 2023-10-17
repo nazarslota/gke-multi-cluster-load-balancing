@@ -71,3 +71,15 @@ jobs:
         run: |
           docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:${{ github.sha }}"
           docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:latest"
+
+  deply:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT }}
+
+      - uses: simenandre/setup-gke-gcloud-auth-plugin@v1
