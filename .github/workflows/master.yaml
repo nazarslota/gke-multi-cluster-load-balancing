@@ -60,10 +60,10 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
+            --file deployments/docker/Dockerfile \
             --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:${{ github.sha }}" \
             --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:latest" \
             .
-        working-directory: deployments/docker
 
       - name: Push Docker image
         run: |
