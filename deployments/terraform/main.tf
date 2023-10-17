@@ -79,6 +79,18 @@ module "artifact_docker_build_push" {
   ]
 }
 
+
+# ====================
+# Deployment
+# ====================
+module "ashburn_virginia_deployment" {
+  source = "./modules/kubernetes-deployment"
+
+  host                   = module.ashburn_virginia_gke.endpoint
+  token                  = data.google_client_config.provider.access_token
+  cluster_ca_certificate = base64decode(module.ashburn_virginia_gke.cluster_ca_certificate)
+}
+
 # ====================
 # Load Balancer
 # ====================

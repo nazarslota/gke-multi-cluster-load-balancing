@@ -1,4 +1,4 @@
-# modules/kubernetes-deploy/variables.tf
+# modules/kubernetes-deployment/variables.tf
 
 variable "host" {
   description = "The host to deploy to"
