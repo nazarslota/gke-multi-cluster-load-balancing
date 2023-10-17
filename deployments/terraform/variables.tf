@@ -5,12 +5,12 @@ variable "project" {
   type        = string
 }
 
-variable "application" {
+variable "deployment_app" {
   description = "The name of the application"
   type        = string
 }
 
-variable "build_number" {
+variable "deployment_build" {
   description = "The build number of the application. For example, the git commit SHA"
   type        = string
 }

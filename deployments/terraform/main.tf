@@ -53,39 +53,16 @@ module "ashburn_gke" {
   services_secondary_range_name = module.ashburn_vpc.services_secondary_range_name
 }
 
-resource "google_artifact_registry_repository" "default" {
-  repository_id = var.application
-  location      = "us-east4"
-  format        = "DOCKER"
+module "artifact_docker_build_push" {
+  source = "./modules/artifact/docker-build-push"
 
-  description = "GKE repository"
-}
+  project  = var.project
+  location = local.ashburn.location
 
-resource "null_resource" "docker_build_and_push" {
-  triggers = {
-    always_run = timestamp()
-  }
+  application  = var.deployment_app
+  repository   = var.deployment_app
+  build_number = var.deployment_build
 
-  provisioner "local-exec" {
-    command = <<EOL
-      cd ../../
-
-      docker login -u _json_key --password-stdin https://${google_artifact_registry_repository.default.location}-docker.pkg.dev < $GOOGLE_APPLICATION_CREDENTIALS
-
-      docker build \
-        --file deployments/docker/Dockerfile \
-        --tag "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.application}/${var.application}:${var.build_number}" \
-        --tag "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.application}/${var.application}:latest" \
-        .
-
-      docker push "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.application}/${var.application}:${var.build_number}"
-      docker push "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.application}/${var.application}:latest"
-    EOL
-  }
-
-  depends_on = [
-    google_artifact_registry_repository.default
-  ]
 }
 
 module "global_load_balancer" {

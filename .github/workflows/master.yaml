@@ -1,8 +1,6 @@
 name: master
 
 # You should set this env variable in your repository settings:
-#   - vars.APPLICATION
-#
 #   - vars.PROJECT
 #   - secrets.SERVICE_ACCOUNT
 
@@ -16,8 +14,8 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     env:
-      TF_VAR_application: ${{ vars.APPLICATION }}
-      TF_VAR_build_number: ${{ github.sha }}
+      TF_VAR_deployment_app: 'gke-multi-cluster-load-balancing'
+      TF_VAR_deployment_build: ${{ github.sha }}
 
       TF_VAR_project: ${{ vars.PROJECT }}
       GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
