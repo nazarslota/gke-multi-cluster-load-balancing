@@ -55,18 +55,17 @@ jobs:
         with:
           credentials_json: ${{ secrets.SERVICE_ACCOUNT }}
 
-      - run: gcloud --quiet auth configure-docker
+      - run: gcloud auth configure-docker us-east4-docker.pkg.dev
 
       - name: Build Docker image
         run: |
           docker build \
-            --tag "pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:${{ github.sha }}" \
-            --tag "pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:latest" \
+            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:${{ github.sha }}" \
+            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:latest" \
             .
         working-directory: deployments/docker
 
       - name: Push Docker image
         run: |
-          docker push "pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:${{ github.sha }}"
-          docker push "pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:latest"
-        working-directory: deployments/docker
+          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:${{ github.sha }}"
+          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:latest"
