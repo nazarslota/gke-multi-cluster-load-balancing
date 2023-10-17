@@ -59,10 +59,9 @@ module "artifact_docker_build_push" {
   project  = var.project
   location = local.ashburn.location
 
-  application  = var.deployment_app
-  repository   = var.deployment_app
+  application  = "${var.deployment_app}-${terraform.workspace}"
+  repository   = "${var.deployment_app}-${terraform.workspace}"
   build_number = var.deployment_build
-
 }
 
 module "global_load_balancer" {
