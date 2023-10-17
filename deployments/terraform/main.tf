@@ -36,32 +36,35 @@ resource "google_artifact_registry_repository" "default" {
 }
 
 # ====================
-# GKE
+# Ashburn Virginia
 # ====================
-module "vpc" {
+locals {
+  ashburn = {
+    name     = "ashburn-virginia-${terraform.workspace}"
+    location = "us-east4"
+  }
+}
+
+module "ashburn_vpc" {
   source = "./modules/vpc"
 
-  for_each = var.clusters
-
-  name   = "${each.value.name}-${terraform.workspace}"
-  region = replace(each.value.location, "-[a-z]$", "")
+  name   = local.ashburn.name
+  region = replace(local.ashburn.location, "-[a-z]$", "") # Remove zone suffix.
 }
 
-module "gke" {
+module "ashburn_gke" {
   source = "./modules/gke"
 
-  for_each = var.clusters
+  name     = local.ashburn.name
+  location = local.ashburn.location
 
-  name     = "${each.value.name}-${terraform.workspace}"
-  location = each.value.location
-
-  vpc                           = module.vpc[each.key].vpc
-  subnet                        = module.vpc[each.key].subnet
-  cluster_secondary_range_name  = module.vpc[each.key].cluster_secondary_range_name
-  services_secondary_range_name = module.vpc[each.key].services_secondary_range_name
+  vpc                           = module.ashburn_vpc.vpc
+  subnet                        = module.ashburn_vpc.subnet
+  cluster_secondary_range_name  = module.ashburn_vpc.cluster_secondary_range_name
+  services_secondary_range_name = module.ashburn_vpc.services_secondary_range_name
 }
 
-module "glb" {
+module "global_load_balancer" {
   source = "./modules/glb/http"
   name   = "global-load-balancer-${terraform.workspace}"
 }
