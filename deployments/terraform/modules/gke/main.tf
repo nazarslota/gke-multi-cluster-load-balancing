@@ -34,4 +34,8 @@ resource "google_container_node_pool" "default" {
     preemptible  = false
     machine_type = var.machine_type
   }
+
+  depends_on = [
+    google_container_cluster.default,
+  ]
 }

@@ -21,4 +21,8 @@ resource "google_compute_subnetwork" "default" {
     range_name    = "${var.name}-services-secondary-range"
     ip_cidr_range = "10.32.0.0/12"
   }
+
+  depends_on = [
+    google_compute_network.default
+  ]
 }

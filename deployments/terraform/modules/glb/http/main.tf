@@ -1,9 +1,5 @@
 # modules/glb/http/main.tf
 
-resource "google_compute_global_address" "default" {
-  name = "${var.name}-global-address"
-}
-
 resource "google_compute_health_check" "default" {
   name                = "${var.name}-health-check"
   timeout_sec         = 5
@@ -26,17 +22,33 @@ resource "google_compute_backend_service" "default" {
   health_checks = [
     google_compute_health_check.default.self_link,
   ]
+
+  depends_on = [
+    google_compute_health_check.default,
+  ]
 }
 
 resource "google_compute_url_map" "default" {
   name            = "${var.name}-url-map"
   default_service = google_compute_backend_service.default.self_link
+
+  depends_on = [
+    google_compute_backend_service.default,
+  ]
 }
 
 
 resource "google_compute_target_http_proxy" "default" {
   name    = "${var.name}-target-http-proxy"
   url_map = google_compute_url_map.default.self_link
+
+  depends_on = [
+    google_compute_url_map.default,
+  ]
+}
+
+resource "google_compute_global_address" "default" {
+  name = "${var.name}-global-address"
 }
 
 resource "google_compute_global_forwarding_rule" "default" {
@@ -47,4 +59,9 @@ resource "google_compute_global_forwarding_rule" "default" {
 
   ip_address = google_compute_global_address.default.address
   port_range = "8080"
+
+  depends_on = [
+    google_compute_global_address.default,
+    google_compute_target_http_proxy.default,
+  ]
 }
