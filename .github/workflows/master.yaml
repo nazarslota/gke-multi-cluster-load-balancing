@@ -1,6 +1,8 @@
 name: master
 
 # You should set this env variable in your repository settings:
+#   - vars.APPLICATION_NAME
+#
 #   - vars.PROJECT
 #   - secrets.SERVICE_ACCOUNT
 
@@ -42,3 +44,29 @@ jobs:
           terraform plan
           terraform apply -auto-approve
         working-directory: deployments/terraform
+
+  build:
+    runs-on: ubuntu-latest
+    needs: infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT }}
+
+      - run: gcloud --quiet auth configure-docker
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --tag "pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:${{ github.sha }}" \
+            --tag "pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:latest" \
+            .
+        working-directory: deployments/docker
+
+      - name: Push Docker image
+        run: |
+          docker push "pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:${{ github.sha }}"
+          docker push "pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:latest"
+        working-directory: deployments/docker
