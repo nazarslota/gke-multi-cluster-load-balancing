@@ -63,11 +63,11 @@ jobs:
         run: |
           docker build \
             --file deployments/docker/Dockerfile \
-            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}:${{ github.sha }}" \
-            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}:latest" \
+            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:${{ github.sha }}" \
+            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:latest" \
             .
 
       - name: Push Docker image
         run: |
-          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}:${{ github.sha }}"
-          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}:latest"
+          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:${{ github.sha }}"
+          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:latest"
