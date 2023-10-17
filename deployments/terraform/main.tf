@@ -25,8 +25,10 @@ terraform {
 }
 
 # ====================
-# Ashburn Virginia
+# GKE
 # ====================
+
+# Ashburn Virginia
 locals {
   ashburn = {
     name     = "ashburn-virginia-${terraform.workspace}"
@@ -51,7 +53,15 @@ module "ashburn_gke" {
   subnet                        = module.ashburn_vpc.subnet
   cluster_secondary_range_name  = module.ashburn_vpc.cluster_secondary_range_name
   services_secondary_range_name = module.ashburn_vpc.services_secondary_range_name
+
+  depends_on = [
+    module.ashburn_vpc,
+  ]
 }
+
+# ====================
+# Artifact
+# ====================
 
 module "artifact_docker_build_push" {
   source = "./modules/artifact/docker-build-push"
@@ -62,7 +72,15 @@ module "artifact_docker_build_push" {
   application  = var.deployment_app
   repository   = "${var.deployment_app}-${terraform.workspace}"
   build_number = var.deployment_build
+
+  depends_on = [
+    module.ashburn_gke,
+  ]
 }
+
+# ====================
+# Load Balancer
+# ====================
 
 module "global_load_balancer" {
   source = "./modules/glb/http"
