@@ -25,17 +25,6 @@ terraform {
 }
 
 # ====================
-# Artifacts Registry
-# ====================
-resource "google_artifact_registry_repository" "default" {
-  repository_id = var.application
-  location      = "us-east4"
-  format        = "DOCKER"
-
-  description = "GKE repository"
-}
-
-# ====================
 # Ashburn Virginia
 # ====================
 locals {
@@ -62,6 +51,39 @@ module "ashburn_gke" {
   subnet                        = module.ashburn_vpc.subnet
   cluster_secondary_range_name  = module.ashburn_vpc.cluster_secondary_range_name
   services_secondary_range_name = module.ashburn_vpc.services_secondary_range_name
+}
+
+resource "google_artifact_registry_repository" "default" {
+  repository_id = var.application
+  location      = "us-east4"
+  format        = "DOCKER"
+
+  description = "GKE repository"
+}
+
+resource "null_resource" "docker_build_and_push" {
+  triggers = {
+    always_run = timestamp()
+  }
+
+  provisioner "local-exec" {
+    command = <<EOL
+      cd ../../
+
+      docker build \
+        --file deployments/docker/Dockerfile \
+        --tag "us-east4-docker.pkg.dev/${var.project}/${var.application}/${var.application}:${var.build_number}" \
+        --tag "us-east4-docker.pkg.dev/${var.project}/${var.application}/${var.application}:latest" \
+      .
+
+      docker push "us-east4-docker.pkg.dev/${var.project}/${var.application}/${var.application}:${var.build_number}"
+      docker push "us-east4-docker.pkg.dev/${var.project}/${var.application}/${var.application}:latest"
+    EOL
+  }
+
+  depends_on = [
+    google_artifact_registry_repository.default
+  ]
 }
 
 module "global_load_balancer" {

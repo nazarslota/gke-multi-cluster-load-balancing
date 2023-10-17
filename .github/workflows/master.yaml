@@ -13,10 +13,11 @@ on:
     branches: [ master, staging ]
 
 jobs:
-  infrastructure:
+  terraform:
     runs-on: ubuntu-latest
     env:
       TF_VAR_application: ${{ vars.APPLICATION }}
+      TF_VAR_build_number: ${{ github.sha }}
 
       TF_VAR_project: ${{ vars.PROJECT }}
       GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
@@ -47,39 +48,39 @@ jobs:
           terraform apply -auto-approve
         working-directory: deployments/terraform
 
-  build:
-    runs-on: ubuntu-latest
-    needs: infrastructure
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.SERVICE_ACCOUNT }}
-
-      - run: gcloud auth configure-docker us-east4-docker.pkg.dev
-
-      - name: Build Docker image
-        run: |
-          docker build \
-            --file deployments/docker/Dockerfile \
-            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:${{ github.sha }}" \
-            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:latest" \
-            .
-
-      - name: Push Docker image
-        run: |
-          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:${{ github.sha }}"
-          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:latest"
-
-  deply:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.SERVICE_ACCOUNT }}
-
-      - uses: simenandre/setup-gke-gcloud-auth-plugin@v1
+#  build:
+#    runs-on: ubuntu-latest
+#    needs: infrastructure
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - uses: google-github-actions/auth@v1
+#        with:
+#          credentials_json: ${{ secrets.SERVICE_ACCOUNT }}
+#
+#      - run: gcloud auth configure-docker us-east4-docker.pkg.dev
+#
+#      - name: Build Docker image
+#        run: |
+#          docker build \
+#            --file deployments/docker/Dockerfile \
+#            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:${{ github.sha }}" \
+#            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:latest" \
+#            .
+#
+#      - name: Push Docker image
+#        run: |
+#          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:${{ github.sha }}"
+#          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}/${{ vars.APPLICATION }}:latest"
+#
+#  deply:
+#    runs-on: ubuntu-latest
+#    needs: build
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - uses: google-github-actions/auth@v1
+#        with:
+#          credentials_json: ${{ secrets.SERVICE_ACCOUNT }}
+#
+#      - uses: simenandre/setup-gke-gcloud-auth-plugin@v1
