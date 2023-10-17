@@ -25,6 +25,17 @@ terraform {
 }
 
 # ====================
+# Artifacts Registry
+# ====================
+resource "google_artifact_registry_repository" "default" {
+  repository_id = var.application
+  location      = "us-east4"
+  format        = "DOCKER"
+
+  description = "GKE repository"
+}
+
+# ====================
 # GKE
 # ====================
 module "vpc" {

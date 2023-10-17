@@ -1,7 +1,7 @@
 name: master
 
 # You should set this env variable in your repository settings:
-#   - vars.APPLICATION_NAME
+#   - vars.APPLICATION
 #
 #   - vars.PROJECT
 #   - secrets.SERVICE_ACCOUNT
@@ -16,6 +16,8 @@ jobs:
   infrastructure:
     runs-on: ubuntu-latest
     env:
+      TF_VAR_application: ${{ vars.APPLICATION }}
+
       TF_VAR_project: ${{ vars.PROJECT }}
       GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
     steps:
@@ -61,11 +63,11 @@ jobs:
         run: |
           docker build \
             --file deployments/docker/Dockerfile \
-            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:${{ github.sha }}" \
-            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:latest" \
+            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}:${{ github.sha }}" \
+            --tag "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}:latest" \
             .
 
       - name: Push Docker image
         run: |
-          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:${{ github.sha }}"
-          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION_NAME }}:latest"
+          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}:${{ github.sha }}"
+          docker push "us-east4-docker.pkg.dev/${{ vars.PROJECT }}/${{ vars.APPLICATION }}:latest"

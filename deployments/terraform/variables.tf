@@ -5,6 +5,11 @@ variable "project" {
   type        = string
 }
 
+variable "application" {
+  description = "The name of the application"
+  type        = string
+}
+
 variable "clusters" {
   description = "Map of GKE clusters and their configurations"
   type        = map(object({
