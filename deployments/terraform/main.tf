@@ -79,7 +79,7 @@ resource "google_service_account" "artifact_service_account" {
 
 resource "google_project_iam_member" "artifact_service_account_iam_member" {
   project = var.project
-  role    = "roles/editor"
+  role    = "roles/artifactregistry.writer"
   member  = "serviceAccount:${google_service_account.artifact_service_account.email}"
 
   depends_on = [
