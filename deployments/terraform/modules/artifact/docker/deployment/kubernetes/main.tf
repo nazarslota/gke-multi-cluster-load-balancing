@@ -3,7 +3,7 @@
 provider "kubernetes" {
   host                   = var.host
   token                  = var.token
-  cluster_ca_certificate = base64decode(var.cluster_ca_certificate)
+  cluster_ca_certificate = var.cluster_ca_certificate
 }
 
 resource "kubernetes_secret" "registry_credentials" {
@@ -16,8 +16,8 @@ resource "kubernetes_secret" "registry_credentials" {
     ".dockerconfigjson" = jsonencode({
       "auths" = {
         "${var.artifact_location}-docker.pkg.dev" = {
-          "username" = var.artifact_username
-          "password" = var.artifact_password
+          "username" = "_json_key_base64"
+          "password" = var.artifact_service_account_key_base64
         }
       }
     })

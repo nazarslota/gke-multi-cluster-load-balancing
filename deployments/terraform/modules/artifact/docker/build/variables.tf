@@ -26,8 +26,8 @@ variable "build_number" {
   type        = string
 }
 
-variable "artifact_service_account_key" {
-  description = "The service account to use for artifact access"
+variable "artifact_service_account_key_base64" {
+  description = "The service account to use for artifact access (base64 encoded)"
   type        = string
   sensitive   = true
 }

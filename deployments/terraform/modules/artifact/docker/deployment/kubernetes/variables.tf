@@ -15,15 +15,6 @@ variable "cluster_ca_certificate" {
   type        = string
 }
 
-variable "artifact_username" {
-  description = "The username to use for artifact storage"
-  type        = string
-}
-
-variable "artifact_password" {
-  description = "The password to use for artifact storage"
-  type        = string
-}
 
 variable "artifact_repository" {
   description = "The repository to store artifacts in"
@@ -38,4 +29,10 @@ variable "artifact_application" {
 variable "artifact_location" {
   description = "The location to store artifacts in"
   type        = string
+}
+
+variable "artifact_service_account_key_base64" {
+  description = "The service account to use for artifact access (base64 encoded)"
+  type        = string
+  sensitive   = true
 }

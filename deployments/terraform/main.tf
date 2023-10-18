@@ -121,7 +121,7 @@ module "artifact_docker_build" {
   repository   = local.artifact_repository
   build_number = local.artifact_build_number
 
-  artifact_service_account_key = google_service_account_key.artifact_service_account_key.private_key
+  artifact_service_account_key_base64 = google_service_account_key.artifact_service_account_key.private_key
 
   depends_on = [
     module.ashburn_virginia_gke,
@@ -133,21 +133,20 @@ module "artifact_docker_build" {
 # Deployment Ashburn Virginia
 # ====================
 
-#module "ashburn_virginia_deployment" {
-#  source = "./modules/artifact/docker/deployment/kubernetes"
-#
-#  host                   = module.ashburn_virginia_gke.endpoint
-#  token                  = data.google_client_config.provider.access_token
-#  cluster_ca_certificate = base64decode(module.ashburn_virginia_gke.cluster_ca_certificate)
-#
-#  artifact_username = "_json_key"
-#  artifact_password = artifact_application = local.
-#artifact_application
-#artifact_location = local.artifact_location
-#artifact_repository = local.artifact_repository
-#
-##  build_number = local.build_number
-#}
+module "ashburn_virginia_deployment" {
+  source = "./modules/artifact/docker/deployment/kubernetes"
+
+  host                   = module.ashburn_virginia_gke.endpoint
+  token                  = data.google_client_config.provider.access_token
+  cluster_ca_certificate = base64decode(module.ashburn_virginia_gke.cluster_ca_certificate)
+
+
+  artifact_application = local.artifact_application
+  artifact_location    = local.artifact_location
+  artifact_repository  = local.artifact_repository
+
+  artifact_service_account_key_base64 = google_service_account_key.artifact_service_account_key.private_key
+}
 
 # ====================
 # Load Balancer
