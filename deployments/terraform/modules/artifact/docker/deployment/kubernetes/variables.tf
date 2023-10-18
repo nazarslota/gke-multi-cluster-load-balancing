@@ -1,6 +1,16 @@
 # modules/kubernetes/variables.tf
 
-variable "host" {
+variable "project" {
+  description = "The project to deploy to"
+  type        = string
+}
+
+variable "name" {
+  description = "The name of the application"
+  type        = string
+}
+
+variable "endpoint" {
   description = "The host to deploy to"
   type        = string
 }
@@ -15,7 +25,6 @@ variable "cluster_ca_certificate" {
   type        = string
 }
 
-
 variable "artifact_repository" {
   description = "The repository to store artifacts in"
   type        = string
@@ -28,6 +37,11 @@ variable "artifact_application" {
 
 variable "artifact_location" {
   description = "The location to store artifacts in"
+  type        = string
+}
+
+variable "artifact_build_number" {
+  description = "The build number to store artifacts in"
   type        = string
 }
 

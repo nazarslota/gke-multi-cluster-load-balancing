@@ -98,10 +98,6 @@ resource "google_service_account_key" "artifact_service_account_key" {
   service_account_id = google_service_account.artifact_service_account.id
   public_key_type    = "TYPE_X509_PEM_FILE"
 
-  lifecycle {
-    create_before_destroy = true
-  }
-
   keepers = {
     rotation_time = time_rotating.artifact_service_account_key_rotation.rotation_rfc3339
   }
@@ -132,20 +128,38 @@ module "artifact_docker_build" {
 # ====================
 # Deployment Ashburn Virginia
 # ====================
-
-module "ashburn_virginia_deployment" {
-  source = "./modules/artifact/docker/deployment/kubernetes"
-
-  host                   = module.ashburn_virginia_gke.endpoint
+provider "kubernetes" {
+  alias                  = "ashburn_virginia"
+  host                   = "https://${module.ashburn_virginia_gke.endpoint}"
   token                  = data.google_client_config.provider.access_token
   cluster_ca_certificate = base64decode(module.ashburn_virginia_gke.cluster_ca_certificate)
+}
 
+module "ashburn_virginia_kubernetes_deployment" {
+  providers = {
+    kubernetes = kubernetes.ashburn_virginia
+  }
 
-  artifact_application = local.artifact_application
-  artifact_location    = local.artifact_location
-  artifact_repository  = local.artifact_repository
+  source = "./modules/artifact/docker/deployment/kubernetes"
+
+  project = var.project
+  name    = "${local.ashburn.name}-${terraform.workspace}"
+
+  endpoint               = module.ashburn_virginia_gke.endpoint
+  token                  = data.google_client_config.provider.access_token
+  cluster_ca_certificate = module.ashburn_virginia_gke.cluster_ca_certificate
+
+  artifact_application  = local.artifact_application
+  artifact_location     = local.artifact_location
+  artifact_repository   = local.artifact_repository
+  artifact_build_number = local.artifact_build_number
 
   artifact_service_account_key_base64 = google_service_account_key.artifact_service_account_key.private_key
+
+  depends_on = [
+    module.ashburn_virginia_gke,
+    module.artifact_docker_build,
+  ]
 }
 
 # ====================
@@ -154,4 +168,8 @@ module "ashburn_virginia_deployment" {
 module "global_load_balancer" {
   source = "./modules/load-balancers/global/http"
   name   = "global-load-balancer-${terraform.workspace}"
+
+  depends_on = [
+    module.ashburn_virginia_kubernetes_deployment,
+  ]
 }

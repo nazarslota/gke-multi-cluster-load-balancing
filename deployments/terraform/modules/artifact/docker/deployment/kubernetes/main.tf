@@ -1,15 +1,27 @@
 # modules/kubernetes/main.tf
 
-provider "kubernetes" {
-  host                   = var.host
-  token                  = var.token
-  cluster_ca_certificate = var.cluster_ca_certificate
+terraform {
+  required_providers {
+    kubernetes = {
+      source = "hashicorp/kubernetes"
+    }
+  }
+}
+
+resource "kubernetes_namespace" "namespace" {
+  metadata {
+    annotations = {
+      name = var.name
+    }
+
+    name = var.name
+  }
 }
 
 resource "kubernetes_secret" "registry_credentials" {
   metadata {
-    name      = "registry-credentials"
-    namespace = "default"
+    name      = "${var.name}-registry-credentials"
+    namespace = kubernetes_namespace.namespace.metadata.0.name
   }
 
   data = {
@@ -24,41 +36,58 @@ resource "kubernetes_secret" "registry_credentials" {
   }
 
   type = "kubernetes.io/dockerconfigjson"
+
+  depends_on = [
+    kubernetes_namespace.namespace
+  ]
 }
-#resource "kubernetes_deployment" "example_deployment" {
-#  metadata {
-#    name = "example-deployment"
-#    labels = {
-#      app = "example"
-#    }
-#  }
-#
-#  spec {
-#    replicas = 3
-#
-#    selector {
-#      match_labels = {
-#        app = "example"
-#      }
-#    }
-#
-#    template {
-#      metadata {
-#        labels = {
-#          app = "example"
-#        }
-#      }
-#
-#      spec {
-#        image_pull_secrets {
-#          name = kubernetes_secret.registry_credentials.metadata[0].name
-#        }
-#
-#        container {
-#          image = "your-registry-url/your-image:your-tag"
-#          name  = "example-container"
-#        }
-#      }
-#    }
-#  }
-#}
+
+resource "kubernetes_deployment" "deployment" {
+  metadata {
+    name   = "${var.name}-deployment"
+    labels = {
+      app = "${var.name}-deployment"
+    }
+
+    namespace = kubernetes_namespace.namespace.metadata.0.name
+  }
+
+  spec {
+    replicas = 1
+
+    selector {
+      match_labels = {
+        app = "${var.name}-deployment"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "${var.name}-deployment"
+        }
+      }
+
+      spec {
+        image_pull_secrets {
+          name = kubernetes_secret.registry_credentials.metadata.0.name
+        }
+
+        container {
+          name  = "${var.name}-container"
+          image = "quay.io/stepanstipl/k8s-demo-app:latest"
+          # "${var.artifact_location}-docker.pkg.dev/${var.project}/${var.artifact_repository}/${var.artifact_application}:${var.artifact_build_number}"
+        }
+      }
+    }
+  }
+
+  timeouts {
+    create = "5m"
+    update = "5m"
+  }
+
+  depends_on = [
+    kubernetes_secret.registry_credentials
+  ]
+}
