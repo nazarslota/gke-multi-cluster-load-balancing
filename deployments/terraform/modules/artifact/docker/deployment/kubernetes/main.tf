@@ -91,3 +91,37 @@ resource "kubernetes_deployment" "deployment" {
     kubernetes_secret.registry_credentials
   ]
 }
+
+resource "kubernetes_service" "service" {
+  metadata {
+    name        = "${var.name}-neg"
+    annotations = {
+      "cloud.google.com/neg" = jsonencode({
+        ingress       = true
+        exposed_ports = {
+          "8080" = {}
+        }
+      })
+    }
+
+    namespace = kubernetes_namespace.namespace.metadata.0.name
+  }
+
+  spec {
+    selector = {
+      app = "${var.name}-deployment"
+    }
+
+    port {
+      protocol    = "TCP"
+      port        = 8080
+      target_port = 8080
+    }
+
+    type = "ClusterIP"
+  }
+
+  depends_on = [
+    kubernetes_deployment.deployment
+  ]
+}
