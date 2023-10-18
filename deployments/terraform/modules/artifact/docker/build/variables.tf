@@ -1,4 +1,4 @@
-# modules/docker-build-push/main.tf
+# modules/build/docker/artifact/variables.tf
 
 variable "project" {
   description = "The name of the project to push to"
@@ -24,4 +24,10 @@ variable "location" {
 variable "build_number" {
   description = "The build number to use for the image"
   type        = string
+}
+
+variable "artifact_service_account_key" {
+  description = "The service account to use for artifact access"
+  type        = string
+  sensitive   = true
 }

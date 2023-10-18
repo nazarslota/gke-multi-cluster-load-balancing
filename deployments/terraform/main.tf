@@ -64,32 +64,100 @@ module "ashburn_virginia_gke" {
 # ====================
 # Artifact
 # ====================
-module "artifact_docker_build_push" {
-  source = "./modules/artifact/docker-build-push"
+locals {
+  artifact_application  = var.deployment_app
+  artifact_repository   = "${var.deployment_app}-${terraform.workspace}"
+  artifact_location     = local.ashburn.location
+  artifact_build_number = var.deployment_build
+}
 
-  project  = var.project
-  location = local.ashburn.location
+resource "google_service_account" "artifact_service_account" {
+  account_id   = "artifact-registry-account"
+  display_name = "Artifact Registry Service Account"
+  project      = var.project
+}
 
-  application  = var.deployment_app
-  repository   = "${var.deployment_app}-${terraform.workspace}"
-  build_number = var.deployment_build
+resource "google_project_iam_custom_role" "artifact_service_account_custom_role" {
+  role_id     = "CustomArtifactUploader"
+  title       = "Custom Artifact Uploader"
+  description = "Allows uploading of artifacts to Artifact Registry"
+  permissions = [
+    "artifactregistry.repositories.uploadArtifacts",
+  ]
+  project = var.project
+}
+
+resource "google_project_iam_member" "artifact_service_account_iam_member" {
+  project = var.project
+  role    = google_project_iam_custom_role.artifact_service_account_custom_role.id
+  member  = "serviceAccount:${google_service_account.artifact_service_account.email}"
 
   depends_on = [
-    module.ashburn_virginia_gke,
+    google_project_iam_custom_role.artifact_service_account_custom_role,
   ]
 }
 
-
-# ====================
-# Deployment
-# ====================
-module "ashburn_virginia_deployment" {
-  source = "./modules/kubernetes-deployment"
-
-  host                   = module.ashburn_virginia_gke.endpoint
-  token                  = data.google_client_config.provider.access_token
-  cluster_ca_certificate = base64decode(module.ashburn_virginia_gke.cluster_ca_certificate)
+resource "time_rotating" "artifact_service_account_key_rotation" {
+  rotation_minutes = 10
+  depends_on       = [
+    google_project_iam_member.artifact_service_account_iam_member,
+  ]
 }
+
+resource "google_service_account_key" "artifact_service_account_key" {
+  service_account_id = google_service_account.artifact_service_account.id
+  public_key_type    = "TYPE_X509_PEM_FILE"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  keepers = {
+    rotation_time = time_rotating.artifact_service_account_key_rotation.rotation_rfc3339
+  }
+
+  depends_on = [
+    time_rotating.artifact_service_account_key_rotation,
+  ]
+}
+
+module "artifact_docker_build" {
+  source = "./modules/artifact/docker/build"
+
+  project  = var.project
+  location = local.artifact_location
+
+  application  = local.artifact_application
+  repository   = local.artifact_repository
+  build_number = local.artifact_build_number
+
+  artifact_service_account_key = google_service_account_key.artifact_service_account_key.private_key
+
+  depends_on = [
+    module.ashburn_virginia_gke,
+    google_service_account_key.artifact_service_account_key,
+  ]
+}
+
+# ====================
+# Deployment Ashburn Virginia
+# ====================
+
+#module "ashburn_virginia_deployment" {
+#  source = "./modules/artifact/docker/deployment/kubernetes"
+#
+#  host                   = module.ashburn_virginia_gke.endpoint
+#  token                  = data.google_client_config.provider.access_token
+#  cluster_ca_certificate = base64decode(module.ashburn_virginia_gke.cluster_ca_certificate)
+#
+#  artifact_username = "_json_key"
+#  artifact_password = artifact_application = local.
+#artifact_application
+#artifact_location = local.artifact_location
+#artifact_repository = local.artifact_repository
+#
+##  build_number = local.build_number
+#}
 
 # ====================
 # Load Balancer

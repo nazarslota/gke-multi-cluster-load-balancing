@@ -1,4 +1,4 @@
-# modules/kubernetes-deployment/main.tf
+# modules/kubernetes/main.tf
 
 provider "kubernetes" {
   host                   = var.host
@@ -6,28 +6,25 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(var.cluster_ca_certificate)
 }
 
-#resource "kubernetes_secret" "registry_credentials" {
-#  metadata {
-#    name      = "registry-credentials"
-#    namespace = "default"
-#  }
-#
-#  data = {
-#    ".dockerconfigjson" = jsonencode({
-#      "auths" = {
-#        "your-registry-url" = {
-#          "username" = var.registry_username
-#          "password" = var.registry_password
-#          "email"    = var.registry_email
-#          "auth"     = base64encode("${var.registry_username}:${var.registry_password}")
-#        }
-#      }
-#    })
-#  }
-#
-#  type = "kubernetes.io/dockerconfigjson"
-#}
+resource "kubernetes_secret" "registry_credentials" {
+  metadata {
+    name      = "registry-credentials"
+    namespace = "default"
+  }
 
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      "auths" = {
+        "${var.artifact_location}-docker.pkg.dev" = {
+          "username" = var.artifact_username
+          "password" = var.artifact_password
+        }
+      }
+    })
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+}
 #resource "kubernetes_deployment" "example_deployment" {
 #  metadata {
 #    name = "example-deployment"
