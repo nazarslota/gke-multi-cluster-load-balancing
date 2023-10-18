@@ -77,23 +77,13 @@ resource "google_service_account" "artifact_service_account" {
   project      = var.project
 }
 
-resource "google_project_iam_custom_role" "artifact_service_account_custom_role" {
-  role_id     = "CustomArtifactUploader"
-  title       = "Custom Artifact Uploader"
-  description = "Allows uploading of artifacts to Artifact Registry"
-  permissions = [
-    "artifactregistry.repositories.uploadArtifacts",
-  ]
-  project = var.project
-}
-
 resource "google_project_iam_member" "artifact_service_account_iam_member" {
   project = var.project
-  role    = google_project_iam_custom_role.artifact_service_account_custom_role.id
+  role    = "roles/editor"
   member  = "serviceAccount:${google_service_account.artifact_service_account.email}"
 
   depends_on = [
-    google_project_iam_custom_role.artifact_service_account_custom_role,
+    google_service_account.artifact_service_account,
   ]
 }
 
