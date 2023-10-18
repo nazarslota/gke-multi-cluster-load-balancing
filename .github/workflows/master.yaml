@@ -14,7 +14,7 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     env:
-      TF_VAR_deployment_app: 'gke-multi-cluster-load-balancing'
+      TF_VAR_deployment_app: 'gke-global-load-balancer'
       TF_VAR_deployment_build: ${{ github.sha }}
 
       TF_VAR_project: ${{ vars.PROJECT }}
