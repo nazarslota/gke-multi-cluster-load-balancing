@@ -14,14 +14,18 @@ resource "google_compute_health_check" "default" {
 }
 
 resource "google_compute_backend_service" "default" {
-  name        = "${var.name}-backend-service"
-  port_name   = "http"
-  protocol    = "HTTP"
-  timeout_sec = 10
+  name          = "${var.name}-backend-service"
+  port_name     = "http"
+  protocol      = "HTTP"
+  timeout_sec   = 10
+  health_checks = [google_compute_health_check.default.self_link]
 
-  health_checks = [
-    google_compute_health_check.default.self_link,
-  ]
+  #  backend {
+  #    group           = var.neg_self_link
+  #    balancing_mode  = "UTILIZATION"
+  #    capacity_scaler = 1
+  #    max_utilization = 1
+  #  }
 
   depends_on = [
     google_compute_health_check.default,
@@ -36,7 +40,6 @@ resource "google_compute_url_map" "default" {
     google_compute_backend_service.default,
   ]
 }
-
 
 resource "google_compute_target_http_proxy" "default" {
   name    = "${var.name}-target-http-proxy"

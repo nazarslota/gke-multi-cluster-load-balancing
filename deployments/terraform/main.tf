@@ -167,7 +167,9 @@ module "ashburn_virginia_kubernetes_deployment" {
 # ====================
 module "global_load_balancer" {
   source = "./modules/load-balancers/global/http"
-  name   = "global-load-balancer-${terraform.workspace}"
+
+  name          = "global-load-balancer-${terraform.workspace}"
+  neg_self_link = module.ashburn_virginia_kubernetes_deployment.neg_self_link
 
   depends_on = [
     module.ashburn_virginia_kubernetes_deployment,

@@ -16,3 +16,7 @@ variable "health_check_port" {
   type        = number
   default     = 8080
 }
+
+variable "neg_self_link" {
+  description = "Self link of NEG"
+}

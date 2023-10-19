@@ -1,4 +1,4 @@
-# modules/kubernetes/main.tf
+# modules/artifact/docker/deployment/kubernetes/main.tf
 
 terraform {
   required_providers {
@@ -92,7 +92,7 @@ resource "kubernetes_deployment" "deployment" {
   ]
 }
 
-resource "kubernetes_service" "service" {
+resource "kubernetes_service" "neg" {
   metadata {
     name        = "${var.name}-neg"
     annotations = {
@@ -123,5 +123,14 @@ resource "kubernetes_service" "service" {
 
   depends_on = [
     kubernetes_deployment.deployment
+  ]
+}
+
+data "google_compute_network_endpoint_group" "neg" {
+  name = kubernetes_service.neg.metadata.0.name
+  zone = "us-east1-a"
+
+  depends_on = [
+    kubernetes_service.neg
   ]
 }

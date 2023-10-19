@@ -1,4 +1,4 @@
-# modules/kubernetes/variables.tf
+# modules/artifact/docker/deployment/kubernetes/variables.tf
 
 variable "project" {
   description = "The project to deploy to"
