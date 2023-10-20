@@ -20,13 +20,13 @@ resource "google_compute_backend_service" "default" {
   timeout_sec   = 10
   health_checks = [google_compute_health_check.default.self_link]
 
-  dynamic "backend" {
-    for_each = var.neg_ids
-    content {
-      group          = "https://www.googleapis.com/compute/v1/${backend.value}"
-      balancing_mode = "RATE"
-    }
-  }
+  #  dynamic "backend" {
+  #    for_each = var.neg_ids
+  #    content {
+  #      group          = "https://www.googleapis.com/compute/v1/${backend.value}"
+  #      balancing_mode = "RATE"
+  #    }
+  #  }
 
   depends_on = [
     google_compute_health_check.default,

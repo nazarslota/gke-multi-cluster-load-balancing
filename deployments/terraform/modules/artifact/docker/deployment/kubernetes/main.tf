@@ -42,29 +42,33 @@ resource "kubernetes_secret" "registry_credentials" {
   ]
 }
 
+locals {
+  deployment_name = "${var.name}-deployment"
+}
+
 resource "kubernetes_deployment" "deployment" {
   metadata {
-    name   = "${var.name}-deployment"
+    name   = local.deployment_name
     labels = {
-      app = "${var.name}-deployment"
+      app = local.deployment_name
     }
 
     namespace = kubernetes_namespace.namespace.metadata.0.name
   }
 
   spec {
-    replicas = 1
+    replicas = 3
 
     selector {
       match_labels = {
-        app = "${var.name}-deployment"
+        app = local.deployment_name
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "${var.name}-deployment"
+          app = local.deployment_name
         }
       }
 
@@ -96,20 +100,14 @@ resource "kubernetes_service" "neg" {
   metadata {
     name        = "${var.name}-neg"
     annotations = {
-      "cloud.google.com/neg" = jsonencode({
-        ingress       = true
-        exposed_ports = {
-          "8080" = {
-          }
-        }
-      })
+      "cloud.google.com/neg" = jsonencode({ "ingress" : true, "exposed_ports" : { "8080" : {} } })
     }
     namespace = kubernetes_namespace.namespace.metadata.0.name
   }
 
   spec {
     selector = {
-      app = "${var.name}-deployment"
+      app = local.deployment_name
     }
 
     port {
@@ -127,22 +125,48 @@ resource "kubernetes_service" "neg" {
 }
 
 resource "time_sleep" "wait_for_neg_creation" {
-  depends_on = [kubernetes_service.neg]
-
-  create_duration = "60s"
+  create_duration = "1m"
+  depends_on      = [
+    kubernetes_service.neg
+  ]
 }
 
-resource "null_resource" "get_neg_names" {
-  triggers = {
-    always_run = timestamp()
-  }
-
+resource "null_resource" "get_negs" {
   provisioner "local-exec" {
-    command = "gcloud compute network-endpoint-groups list --format='value(name)' --zone='us-east4-a' > ${path.module}/neg_names.txt"
+    command = <<EOL
+      rm -f ${path.module}/negs
+      gcloud compute network-endpoint-groups list \
+        --filter="description~'${var.name}'" \
+        --format="value(name)" \
+        >> ${path.module}/negs
+    EOL
   }
+
+  triggers = {
+    always_run     = timestamp()
+    neg_service_id = kubernetes_service.neg.id
+  }
+
+  depends_on = [
+    time_sleep.wait_for_neg_creation
+  ]
 }
 
-#data "local_file" "neg_names" {
-#  depends_on = [null_resource.get_neg_names]
-#  filename   = "${path.module}/neg_names.txt"
+
+#      echo "${var.cluster_name}" > ${path.module}/negs
+#resource "null_resource" "get_negs_from_gcloud" {
+#  provisioner "local-exec" {
+#
+#  }
+#
+#  triggers = {
+#    always_run     = timestamp()
+#    neg_service_id = kubernetes_service.neg.id
+#  }
+#
+#  depends_on = [
+#    time_sleep.wait_for_neg_creation
+#  ]
 #}
+#
+#

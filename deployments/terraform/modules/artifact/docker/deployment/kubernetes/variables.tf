@@ -10,12 +10,17 @@ variable "name" {
   type        = string
 }
 
-variable "endpoint" {
+variable "cluster_name" {
+  description = "The name of the cluster to deploy to"
+  type        = string
+}
+
+variable "cluster_endpoint" {
   description = "The host to deploy to"
   type        = string
 }
 
-variable "token" {
+variable "cluster_token" {
   description = "The token to use for authentication"
   type        = string
 }

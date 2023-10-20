@@ -4,11 +4,7 @@ output "cluster_name" {
   value = google_container_cluster.default.name
 }
 
-output "cluster_node_pool_name" {
-  value = google_container_node_pool.default.name
-}
-
-output "endpoint" {
+output "cluster_endpoint" {
   value = google_container_cluster.default.endpoint
 }
 

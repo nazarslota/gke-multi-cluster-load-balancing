@@ -130,7 +130,7 @@ module "artifact_docker_build" {
 # ====================
 provider "kubernetes" {
   alias                  = "ashburn_virginia"
-  host                   = "https://${module.ashburn_virginia_gke.endpoint}"
+  host                   = "https://${module.ashburn_virginia_gke.cluster_endpoint}"
   token                  = data.google_client_config.provider.access_token
   cluster_ca_certificate = base64decode(module.ashburn_virginia_gke.cluster_ca_certificate)
 }
@@ -143,10 +143,11 @@ module "ashburn_virginia_kubernetes_deployment" {
   source = "./modules/artifact/docker/deployment/kubernetes"
 
   project = var.project
-  name    = "${local.ashburn.name}-${terraform.workspace}"
+  name    = local.ashburn.name
 
-  endpoint               = module.ashburn_virginia_gke.endpoint
-  token                  = data.google_client_config.provider.access_token
+  cluster_name           = module.ashburn_virginia_gke.cluster_name
+  cluster_endpoint       = module.ashburn_virginia_gke.cluster_endpoint
+  cluster_token          = data.google_client_config.provider.access_token
   cluster_ca_certificate = module.ashburn_virginia_gke.cluster_ca_certificate
 
   artifact_application  = local.artifact_application
