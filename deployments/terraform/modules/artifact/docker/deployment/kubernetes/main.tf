@@ -99,11 +99,11 @@ resource "kubernetes_service" "neg" {
       "cloud.google.com/neg" = jsonencode({
         ingress       = true
         exposed_ports = {
-          "8080" = {}
+          "8080" = {
+          }
         }
       })
     }
-
     namespace = kubernetes_namespace.namespace.metadata.0.name
   }
 
@@ -126,11 +126,23 @@ resource "kubernetes_service" "neg" {
   ]
 }
 
-data "google_compute_network_endpoint_group" "neg" {
-  name = kubernetes_service.neg.metadata.0.name
-  zone = "us-east1-a"
+resource "time_sleep" "wait_for_neg_creation" {
+  depends_on = [kubernetes_service.neg]
 
-  depends_on = [
-    kubernetes_service.neg
-  ]
+  create_duration = "60s"
 }
+
+resource "null_resource" "get_neg_names" {
+  triggers = {
+    always_run = timestamp()
+  }
+
+  provisioner "local-exec" {
+    command = "gcloud compute network-endpoint-groups list --format='value(name)' --zone='us-east4-a' > ${path.module}/neg_names.txt"
+  }
+}
+
+#data "local_file" "neg_names" {
+#  depends_on = [null_resource.get_neg_names]
+#  filename   = "${path.module}/neg_names.txt"
+#}

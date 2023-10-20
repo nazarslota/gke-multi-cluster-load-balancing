@@ -17,6 +17,7 @@ variable "health_check_port" {
   default     = 8080
 }
 
-variable "neg_self_link" {
-  description = "Self link of NEG"
+variable "neg_ids" {
+  description = "List of NEG IDs"
+  type        = list(string)
 }
