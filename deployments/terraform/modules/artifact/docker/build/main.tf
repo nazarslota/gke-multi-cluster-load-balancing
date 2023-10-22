@@ -18,7 +18,7 @@ resource "null_resource" "docker_build_and_push" {
       cd ../../
 
       rm -f account.json
-      echo "${var.artifact_service_account_key_base64}" >> account.json
+      echo "${var.service_account_key_base64}" >> account.json
 
       docker login \
         -u _json_key_base64 \

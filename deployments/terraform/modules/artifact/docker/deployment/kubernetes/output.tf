@@ -1,5 +1,15 @@
 # modules/artifact/docker/deployment/kubernetes/output.tf
 
-output "neg_id" {
-  value = "" // "/${data.kubernetes_service.neg.metadata.0.annotations["cloud.google.com/neg-status"]}"
+output "negs" {
+  description = "Details for the Network Endpoint Group (NEG) per zone"
+  value       = [
+    for zone in try(jsondecode(data.local_file.negs.content)["zones"], []) : {
+      name = jsondecode(data.local_file.negs.content)["network_endpoint_groups"]["8080"],
+      zone = zone
+    }
+  ]
+
+  depends_on = [
+    data.local_file.negs
+  ]
 }

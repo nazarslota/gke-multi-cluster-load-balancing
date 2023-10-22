@@ -1,3 +1,4 @@
 /.terraform/
 /.terraform.lock.hcl
 /terraform.tfvars
+/modules/artifact/docker/deployment/kubernetes/neg.json

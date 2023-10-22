@@ -1,5 +1,10 @@
 # modules/glb/http/variables.tf.tf
 
+variable "project" {
+  description = "Project ID"
+  type        = string
+}
+
 variable "name" {
   description = "Name of the GLB"
   type        = string
@@ -17,7 +22,16 @@ variable "health_check_port" {
   default     = 8080
 }
 
-variable "neg_ids" {
-  description = "List of NEG IDs"
-  type        = list(string)
+variable "vpc_self_link" {
+  description = "VPC Self Link"
+  type        = string
+}
+
+variable "negs" {
+  description = "List of Network Endpoint Groups (NEGs) details"
+  type        = list(object({
+    name = string
+    zone = string
+  }))
+  default = []
 }

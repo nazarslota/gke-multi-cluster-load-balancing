@@ -20,13 +20,15 @@ resource "google_compute_backend_service" "default" {
   timeout_sec   = 10
   health_checks = [google_compute_health_check.default.self_link]
 
-  #  dynamic "backend" {
-  #    for_each = var.neg_ids
-  #    content {
-  #      group          = "https://www.googleapis.com/compute/v1/${backend.value}"
-  #      balancing_mode = "RATE"
-  #    }
-  #  }
+  dynamic "backend" {
+    for_each = var.negs
+    content {
+      group = "https://www.googleapis.com/compute/v1/projects/${var.project}/zones/${backend.value.zone}/networkEndpointGroups/${backend.value.name}"
+
+      max_rate       = 100
+      balancing_mode = "RATE"
+    }
+  }
 
   depends_on = [
     google_compute_health_check.default,
@@ -55,6 +57,18 @@ resource "google_compute_global_address" "default" {
   name = "${var.name}-global-address"
 }
 
+resource "google_compute_firewall" "default" {
+  name    = "${var.name}-firewall"
+  network = var.vpc_self_link
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+}
+
 resource "google_compute_global_forwarding_rule" "default" {
   name = "${var.name}-forwarding-rule"
 
@@ -65,6 +79,7 @@ resource "google_compute_global_forwarding_rule" "default" {
   port_range = "8080"
 
   depends_on = [
+    google_compute_firewall.default,
     google_compute_global_address.default,
     google_compute_target_http_proxy.default,
   ]

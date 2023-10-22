@@ -10,47 +10,27 @@ variable "name" {
   type        = string
 }
 
-variable "cluster_name" {
-  description = "The name of the cluster to deploy to"
-  type        = string
-}
-
-variable "cluster_endpoint" {
-  description = "The host to deploy to"
-  type        = string
-}
-
-variable "cluster_token" {
-  description = "The token to use for authentication"
-  type        = string
-}
-
-variable "cluster_ca_certificate" {
-  description = "The CA certificate for the cluster"
-  type        = string
-}
-
-variable "artifact_repository" {
+variable "repository" {
   description = "The repository to store artifacts in"
   type        = string
 }
 
-variable "artifact_application" {
+variable "application" {
   description = "The application to store artifacts in"
   type        = string
 }
 
-variable "artifact_location" {
+variable "location" {
   description = "The location to store artifacts in"
   type        = string
 }
 
-variable "artifact_build_number" {
+variable "build_number" {
   description = "The build number to store artifacts in"
   type        = string
 }
 
-variable "artifact_service_account_key_base64" {
+variable "service_account_key_base64" {
   description = "The service account to use for artifact access (base64 encoded)"
   type        = string
   sensitive   = true

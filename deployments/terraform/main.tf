@@ -113,11 +113,10 @@ module "artifact_docker_build" {
   project  = var.project
   location = local.artifact_location
 
-  application  = local.artifact_application
-  repository   = local.artifact_repository
-  build_number = local.artifact_build_number
-
-  artifact_service_account_key_base64 = google_service_account_key.artifact_service_account_key.private_key
+  application                = local.artifact_application
+  repository                 = local.artifact_repository
+  build_number               = local.artifact_build_number
+  service_account_key_base64 = google_service_account_key.artifact_service_account_key.private_key
 
   depends_on = [
     module.ashburn_virginia_gke,
@@ -139,23 +138,17 @@ module "ashburn_virginia_kubernetes_deployment" {
   providers = {
     kubernetes = kubernetes.ashburn_virginia
   }
-
   source = "./modules/artifact/docker/deployment/kubernetes"
+
 
   project = var.project
   name    = local.ashburn.name
 
-  cluster_name           = module.ashburn_virginia_gke.cluster_name
-  cluster_endpoint       = module.ashburn_virginia_gke.cluster_endpoint
-  cluster_token          = data.google_client_config.provider.access_token
-  cluster_ca_certificate = module.ashburn_virginia_gke.cluster_ca_certificate
-
-  artifact_application  = local.artifact_application
-  artifact_location     = local.artifact_location
-  artifact_repository   = local.artifact_repository
-  artifact_build_number = local.artifact_build_number
-
-  artifact_service_account_key_base64 = google_service_account_key.artifact_service_account_key.private_key
+  application                = local.artifact_application
+  build_number               = local.artifact_location
+  location                   = local.artifact_repository
+  repository                 = local.artifact_build_number
+  service_account_key_base64 = google_service_account_key.artifact_service_account_key.private_key
 
   depends_on = [
     module.ashburn_virginia_gke,
@@ -169,10 +162,15 @@ module "ashburn_virginia_kubernetes_deployment" {
 module "global_load_balancer" {
   source = "./modules/load-balancers/global/http"
 
+  project = var.project
   name    = "global-load-balancer-${terraform.workspace}"
-  neg_ids = tolist([module.ashburn_virginia_kubernetes_deployment.neg_id])
+
+  vpc_self_link = module.ashburn_virginia_vpc.vpc_self_link
+  negs          = module.ashburn_virginia_kubernetes_deployment.negs
 
   depends_on = [
     module.ashburn_virginia_kubernetes_deployment,
   ]
 }
+
+

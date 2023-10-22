@@ -5,9 +5,19 @@ output "vpc" {
   description = "The VPC name"
 }
 
+output "vpc_self_link" {
+  value       = google_compute_network.default.self_link
+  description = "The VPC self link"
+}
+
 output "subnet" {
   value       = google_compute_subnetwork.default.name
   description = "The subnet name"
+}
+
+output "subnet_self_link" {
+  value       = google_compute_subnetwork.default.self_link
+  description = "The subnet self link"
 }
 
 output "cluster_secondary_range_name" {

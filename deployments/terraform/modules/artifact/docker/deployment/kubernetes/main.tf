@@ -27,9 +27,9 @@ resource "kubernetes_secret" "registry_credentials" {
   data = {
     ".dockerconfigjson" = jsonencode({
       "auths" = {
-        "${var.artifact_location}-docker.pkg.dev" = {
+        "${var.location}-docker.pkg.dev" = {
           "username" = "_json_key_base64"
-          "password" = var.artifact_service_account_key_base64
+          "password" = var.service_account_key_base64
         }
       }
     })
@@ -57,7 +57,7 @@ resource "kubernetes_deployment" "deployment" {
   }
 
   spec {
-    replicas = 3
+    replicas = 6
 
     selector {
       match_labels = {
@@ -100,7 +100,12 @@ resource "kubernetes_service" "neg" {
   metadata {
     name        = "${var.name}-neg"
     annotations = {
-      "cloud.google.com/neg" = jsonencode({ "ingress" : true, "exposed_ports" : { "8080" : {} } })
+      "cloud.google.com/neg" = jsonencode({
+        "ingress" : true,
+        "exposed_ports" : {
+          "8080" : {}
+        }
+      })
     }
     namespace = kubernetes_namespace.namespace.metadata.0.name
   }
@@ -124,9 +129,15 @@ resource "kubernetes_service" "neg" {
   ]
 }
 
-resource "time_sleep" "wait_for_neg_creation" {
-  create_duration = "1m"
-  depends_on      = [
+resource "time_sleep" "wait_neg" {
+  create_duration = "3m"
+
+  triggers = {
+    always_run     = timestamp()
+    neg_service_id = kubernetes_service.neg.id
+  }
+
+  depends_on = [
     kubernetes_service.neg
   ]
 }
@@ -134,11 +145,8 @@ resource "time_sleep" "wait_for_neg_creation" {
 resource "null_resource" "get_negs" {
   provisioner "local-exec" {
     command = <<EOL
-      rm -f ${path.module}/negs
-      gcloud compute network-endpoint-groups list \
-        --filter="description~'${var.name}'" \
-        --format="value(name)" \
-        >> ${path.module}/negs
+      rm -f ${path.module}/neg.json
+      echo ${jsonencode(kubernetes_service.neg.metadata.0.annotations["cloud.google.com/neg-status"])} >> ${path.module}/neg.json
     EOL
   }
 
@@ -148,25 +156,14 @@ resource "null_resource" "get_negs" {
   }
 
   depends_on = [
-    time_sleep.wait_for_neg_creation
+    time_sleep.wait_neg
   ]
 }
 
+data "local_file" "negs" {
+  filename   = "${path.module}/neg.json"
+  depends_on = [
+    null_resource.get_negs
+  ]
+}
 
-#      echo "${var.cluster_name}" > ${path.module}/negs
-#resource "null_resource" "get_negs_from_gcloud" {
-#  provisioner "local-exec" {
-#
-#  }
-#
-#  triggers = {
-#    always_run     = timestamp()
-#    neg_service_id = kubernetes_service.neg.id
-#  }
-#
-#  depends_on = [
-#    time_sleep.wait_for_neg_creation
-#  ]
-#}
-#
-#
