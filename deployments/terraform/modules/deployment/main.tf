@@ -54,7 +54,7 @@ resource "kubernetes_deployment" "deployment" {
   }
 
   spec {
-    replicas = 6
+    replicas = 3
     selector {
       match_labels = {
         app = local.deployment_name
@@ -75,8 +75,7 @@ resource "kubernetes_deployment" "deployment" {
 
         container {
           name  = "${var.name}-container"
-          image = "us-east4-docker.pkg.dev/gke-global-load-balancer/gke-global-load-balancer-production/gke-global-load-balancer:latest"
-          #          image = "${var.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.app}:${var.build_number}"
+          image = "${var.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.app}:${var.build_number}"
         }
       }
     }

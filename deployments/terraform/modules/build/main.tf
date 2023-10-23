@@ -25,6 +25,7 @@ resource "null_resource" "docker_build_and_push" {
         --password-stdin https://${google_artifact_registry_repository.default.location}-docker.pkg.dev < account.json
 
       docker build \
+        --platform linux/amd64 \
         --file deployments/docker/Dockerfile \
         --tag "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.app}:${var.build_number}" \
         --tag "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.app}:latest" \
