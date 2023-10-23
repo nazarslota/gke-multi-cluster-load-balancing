@@ -262,7 +262,7 @@ module "deployment_milan" {
 # Global Load Balancer
 # ====================
 module "global_load_balancer" {
-  source     = ".modules/glb"
+  source     = "./modules/glb"
   depends_on = [module.deployment_virginia, module.deployment_milan]
 
   project = var.project
