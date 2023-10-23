@@ -82,8 +82,8 @@ resource "kubernetes_deployment" "deployment" {
   }
 
   timeouts {
-    create = "1m"
-    update = "1m"
+    create = "5m"
+    update = "5m"
   }
 }
 
@@ -96,7 +96,7 @@ resource "kubernetes_service" "neg" {
       "cloud.google.com/neg" = jsonencode({
         "ingress" : true,
         "exposed_ports" : {
-          "8080" : {}
+          "50051" : {}
         }
       })
     }
@@ -110,8 +110,8 @@ resource "kubernetes_service" "neg" {
 
     port {
       protocol    = "TCP"
-      port        = 8080
-      target_port = 8080
+      port        = 50051      # Service will listen on this port
+      target_port = 50051      # Should match the port your application inside the container is running on
     }
 
     type = "ClusterIP"
@@ -124,7 +124,7 @@ resource "time_sleep" "wait_neg" {
   triggers = {
     neg_service_id = kubernetes_service.neg.id
   }
-  create_duration = "3m"
+  create_duration = "5m"
 }
 
 resource "null_resource" "get_negs" {
