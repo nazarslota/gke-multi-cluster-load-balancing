@@ -125,7 +125,7 @@ locals {
 
 resource "google_service_account" "service_account" {
   project      = var.project
-  account_id   = "deployment-service-account"
+  account_id   = "deployment-${terraform.workspace}-account"
   display_name = "Deployment Service Account"
 }
 
