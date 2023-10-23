@@ -75,7 +75,8 @@ resource "kubernetes_deployment" "deployment" {
 
         container {
           name  = "${var.name}-container"
-          image = "${var.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.app}:${var.build_number}"
+          image = "quay.io/stepanstipl/k8s-demo-app:latest"
+          // "${var.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.app}:${var.build_number}"
         }
       }
     }
@@ -96,7 +97,7 @@ resource "kubernetes_service" "neg" {
       "cloud.google.com/neg" = jsonencode({
         "ingress" : true,
         "exposed_ports" : {
-          "50051" : {}
+          "8080" : {}
         }
       })
     }
@@ -110,8 +111,8 @@ resource "kubernetes_service" "neg" {
 
     port {
       protocol    = "TCP"
-      port        = 50051      # Service will listen on this port
-      target_port = 50051      # Should match the port your application inside the container is running on
+      port        = 8080      # Service will listen on this port
+      target_port = 8080      # Should match the port your application inside the container is running on
     }
 
     type = "ClusterIP"

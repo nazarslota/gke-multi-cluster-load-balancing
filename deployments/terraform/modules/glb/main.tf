@@ -6,7 +6,7 @@ resource "google_compute_health_check" "default" {
   unhealthy_threshold = 2
 
   grpc_health_check {
-    port = 50051
+    port = 8080
   }
 }
 
@@ -47,7 +47,7 @@ resource "google_compute_firewall" "default" {
 
   allow {
     protocol = "tcp"
-    ports    = ["50051"]
+    ports    = ["8080"]
   }
   source_ranges = ["0.0.0.0/0"]
 }
@@ -61,7 +61,7 @@ resource "google_compute_global_forwarding_rule" "default" {
 
   name                  = "${var.name}-forwarding-rule"
   load_balancing_scheme = "EXTERNAL"
-  port_range            = "50051"
+  port_range            = "8080"
 
   target     = google_compute_target_tcp_proxy.default.self_link
   ip_address = google_compute_global_address.default.address
