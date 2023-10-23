@@ -13,12 +13,13 @@ resource "kubernetes_namespace" "namespace" {
     annotations = {
       name = var.name
     }
-
     name = var.name
   }
 }
 
 resource "kubernetes_secret" "registry_credentials" {
+  depends_on = [kubernetes_namespace.namespace]
+
   metadata {
     name      = "${var.name}-registry-credentials"
     namespace = kubernetes_namespace.namespace.metadata.0.name
@@ -34,12 +35,7 @@ resource "kubernetes_secret" "registry_credentials" {
       }
     })
   }
-
   type = "kubernetes.io/dockerconfigjson"
-
-  depends_on = [
-    kubernetes_namespace.namespace
-  ]
 }
 
 locals {
@@ -47,18 +43,18 @@ locals {
 }
 
 resource "kubernetes_deployment" "deployment" {
+  depends_on = [kubernetes_secret.registry_credentials]
+
   metadata {
     name   = local.deployment_name
     labels = {
       app = local.deployment_name
     }
-
     namespace = kubernetes_namespace.namespace.metadata.0.name
   }
 
   spec {
     replicas = 6
-
     selector {
       match_labels = {
         app = local.deployment_name
@@ -90,13 +86,11 @@ resource "kubernetes_deployment" "deployment" {
     create = "5m"
     update = "5m"
   }
-
-  depends_on = [
-    kubernetes_secret.registry_credentials
-  ]
 }
 
 resource "kubernetes_service" "neg" {
+  depends_on = [kubernetes_deployment.deployment]
+
   metadata {
     name        = "${var.name}-neg"
     annotations = {
@@ -123,47 +117,33 @@ resource "kubernetes_service" "neg" {
 
     type = "ClusterIP"
   }
-
-  depends_on = [
-    kubernetes_deployment.deployment
-  ]
 }
 
 resource "time_sleep" "wait_neg" {
-  create_duration = "3m"
+  depends_on = [kubernetes_service.neg]
 
   triggers = {
-    always_run     = timestamp()
     neg_service_id = kubernetes_service.neg.id
   }
-
-  depends_on = [
-    kubernetes_service.neg
-  ]
+  create_duration = "3m"
 }
 
 resource "null_resource" "get_negs" {
+  depends_on = [time_sleep.wait_neg]
+
+  triggers = {
+    always_run = timestamp()
+  }
+
   provisioner "local-exec" {
     command = <<EOL
       rm -f ${path.module}/neg.json
       echo ${jsonencode(kubernetes_service.neg.metadata.0.annotations["cloud.google.com/neg-status"])} >> ${path.module}/neg.json
     EOL
   }
-
-  triggers = {
-    always_run     = timestamp()
-    neg_service_id = kubernetes_service.neg.id
-  }
-
-  depends_on = [
-    time_sleep.wait_neg
-  ]
 }
 
 data "local_file" "negs" {
+  depends_on = [null_resource.get_negs]
   filename   = "${path.module}/neg.json"
-  depends_on = [
-    null_resource.get_negs
-  ]
 }
-

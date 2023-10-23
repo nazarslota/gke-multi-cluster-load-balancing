@@ -26,12 +26,12 @@ resource "null_resource" "docker_build_and_push" {
 
       docker build \
         --file deployments/docker/Dockerfile \
-        --tag "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.application}:${var.build_number}" \
-        --tag "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.application}:latest" \
+        --tag "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.app}:${var.build_number}" \
+        --tag "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.app}:latest" \
         .
 
-      docker push "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.application}:${var.build_number}"
-      docker push "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.application}:latest"
+      docker push "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.app}:${var.build_number}"
+      docker push "${google_artifact_registry_repository.default.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.app}:latest"
 
       rm -f account.json
     EOL

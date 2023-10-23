@@ -24,6 +24,8 @@ resource "google_container_cluster" "default" {
 }
 
 resource "google_container_node_pool" "default" {
+  depends_on = [google_container_cluster.default]
+
   name    = "${var.name}-node-pool"
   cluster = google_container_cluster.default.name
 
@@ -34,8 +36,4 @@ resource "google_container_node_pool" "default" {
     preemptible  = false
     machine_type = var.machine_type
   }
-
-  depends_on = [
-    google_container_cluster.default,
-  ]
 }

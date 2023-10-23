@@ -10,7 +10,7 @@ variable "repository" {
   type        = string
 }
 
-variable "application" {
+variable "app" {
   description = "The name of the application to push to"
   type        = string
 }

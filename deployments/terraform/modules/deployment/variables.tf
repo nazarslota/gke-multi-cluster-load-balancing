@@ -15,7 +15,7 @@ variable "repository" {
   type        = string
 }
 
-variable "application" {
+variable "app" {
   description = "The application to store artifacts in"
   type        = string
 }

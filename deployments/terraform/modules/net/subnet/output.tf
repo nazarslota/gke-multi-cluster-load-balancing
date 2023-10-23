@@ -1,21 +1,11 @@
-# modules/output/output.tf
+# modules/vpc/subnet/output.tf
 
-output "vpc" {
-  value       = google_compute_network.default.name
-  description = "The VPC name"
-}
-
-output "vpc_self_link" {
-  value       = google_compute_network.default.self_link
-  description = "The VPC self link"
-}
-
-output "subnet" {
+output "name" {
   value       = google_compute_subnetwork.default.name
   description = "The subnet name"
 }
 
-output "subnet_self_link" {
+output "self_link" {
   value       = google_compute_subnetwork.default.self_link
   description = "The subnet self link"
 }
