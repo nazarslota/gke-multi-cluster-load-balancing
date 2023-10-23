@@ -22,6 +22,12 @@ variable "machine_type" {
   default     = "e2-micro"
 }
 
+variable "disk_size_gb" {
+  description = "The size of the disk attached to each node in the cluster's default node pool"
+  type        = number
+  default     = 10
+}
+
 variable "vpc" {
   description = "The VPC network for the GKE cluster"
   type        = string
