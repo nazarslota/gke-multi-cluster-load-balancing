@@ -79,6 +79,6 @@ func main() {
 		log.Fatalf("You must provide paths to certificate, key, and CA files when TLS is enabled")
 	}
 
-	address := fmt.Sprintf(":%s", *port)
+	address := fmt.Sprintf("0.0.0.0:%s", *port)
 	startServer(address, *useTLS, *certFile, *keyFile, *caFile)
 }

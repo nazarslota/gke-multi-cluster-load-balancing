@@ -82,8 +82,8 @@ resource "kubernetes_deployment" "deployment" {
   }
 
   timeouts {
-    create = "5m"
-    update = "5m"
+    create = "1m"
+    update = "1m"
   }
 }
 
