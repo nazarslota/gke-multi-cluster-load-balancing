@@ -75,8 +75,8 @@ resource "kubernetes_deployment" "deployment" {
 
         container {
           name  = "${var.name}-container"
-          image = "quay.io/stepanstipl/k8s-demo-app:latest"
-          # "${var.artifact_location}-docker.pkg.dev/${var.project}/${var.artifact_repository}/${var.artifact_application}:${var.artifact_build_number}"
+          image = "us-east4-docker.pkg.dev/gke-global-load-balancer/gke-global-load-balancer-production/gke-global-load-balancer:latest"
+          #          image = "${var.location}-docker.pkg.dev/${var.project}/${var.repository}/${var.app}:${var.build_number}"
         }
       }
     }

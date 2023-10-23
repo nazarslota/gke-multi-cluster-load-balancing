@@ -123,33 +123,33 @@ locals {
   artifact_build_number = var.build
 }
 
-resource "google_service_account" "artifact_service_account" {
+resource "google_service_account" "service_account" {
   project      = var.project
-  account_id   = "artifact-registry-account"
-  display_name = "Artifact Registry Service Account"
+  account_id   = "deployment-service-account"
+  display_name = "Deployment Service Account"
 }
 
-resource "google_project_iam_member" "artifact_service_account_iam_member" {
-  depends_on = [google_service_account.artifact_service_account]
+resource "google_project_iam_member" "service_account_iam_member" {
+  depends_on = [google_service_account.service_account]
 
   project = var.project
-  role    = "roles/artifactregistry.writer"
-  member  = "serviceAccount:${google_service_account.artifact_service_account.email}"
+  role    = "roles/owner"
+  member  = "serviceAccount:${google_service_account.service_account.email}"
 }
 
-resource "time_rotating" "artifact_service_account_key_rotation" {
-  depends_on       = [google_project_iam_member.artifact_service_account_iam_member]
+resource "time_rotating" "service_account_key_rotation" {
+  depends_on       = [google_project_iam_member.service_account_iam_member]
   rotation_minutes = 10
 }
 
-resource "google_service_account_key" "artifact_service_account_key" {
-  depends_on = [time_rotating.artifact_service_account_key_rotation]
+resource "google_service_account_key" "service_account_key" {
+  depends_on = [time_rotating.service_account_key_rotation]
 
-  service_account_id = google_service_account.artifact_service_account.id
+  service_account_id = google_service_account.service_account.id
   public_key_type    = "TYPE_X509_PEM_FILE"
 
   keepers = {
-    rotation_time = time_rotating.artifact_service_account_key_rotation.rotation_rfc3339
+    rotation_time = time_rotating.service_account_key_rotation.rotation_rfc3339
   }
 }
 
@@ -158,51 +158,22 @@ resource "google_service_account_key" "artifact_service_account_key" {
 # Build
 # ====================
 module "build" {
-  depends_on = [google_service_account_key.artifact_service_account_key]
+  depends_on = [google_service_account_key.service_account_key]
   source     = "./modules/build"
 
   project      = var.project
   app          = local.artifact_app
+  location     = local.artifact_location
   repository   = local.artifact_repository
   build_number = local.artifact_build_number
 
-  service_account_key_base64 = google_service_account_key.artifact_service_account_key.private_key
+  service_account_key_base64 = google_service_account_key.service_account_key.private_key
 }
 
 
 # ====================
 # Deployment
 # ====================
-resource "google_service_account" "deployment_service_account" {
-  project     = var.project
-  account_id  = "deployment-service-account"
-  description = "Deployment Service Account"
-}
-
-resource "google_project_iam_member" "deployment_service_account_iam_member" {
-  depends_on = [google_service_account.artifact_service_account]
-
-  project = var.project
-  role    = "roles/container.developer"
-  member  = "serviceAccount:${google_service_account.artifact_service_account.email}"
-}
-
-resource "time_rotating" "deployment_service_account_key_rotation" {
-  depends_on       = [google_project_iam_member.deployment_service_account_iam_member]
-  rotation_minutes = 10
-}
-
-resource "google_service_account_key" "deployment_service_account_key" {
-  depends_on = [time_rotating.deployment_service_account_key_rotation]
-
-  service_account_id = google_service_account.deployment_service_account.id
-  public_key_type    = "TYPE_X509_PEM_FILE"
-
-  keepers = {
-    rotation_time = time_rotating.deployment_service_account_key_rotation.rotation_rfc3339
-  }
-}
-
 provider "kubernetes" {
   alias = "virginia"
 
@@ -227,7 +198,7 @@ module "deployment_virginia" {
   repository   = local.artifact_repository
   build_number = local.artifact_build_number
 
-  service_account_key_base64 = google_service_account_key.deployment_service_account_key.private_key
+  service_account_key_base64 = google_service_account_key.service_account_key.private_key
 }
 
 provider "kubernetes" {
@@ -246,15 +217,15 @@ module "deployment_milan" {
     kubernetes = kubernetes.milan
   }
 
-  project  = var.project
-  name     = local.milan.name
-  location = local.milan.location
+  project = var.project
+  name    = local.milan.name
 
   app          = local.artifact_app
+  location     = local.artifact_location
   repository   = local.artifact_repository
   build_number = local.artifact_build_number
 
-  service_account_key_base64 = google_service_account_key.deployment_service_account_key.private_key
+  service_account_key_base64 = google_service_account_key.service_account_key.private_key
 }
 
 

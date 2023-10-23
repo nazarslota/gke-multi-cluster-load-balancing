@@ -18,5 +18,4 @@ COPY --from=builder /go/src/github.com/nazarslota/gke-multi-cluster-load-balanci
 
 EXPOSE 50051
 
-ENTRYPOINT ["./entrypoint.sh"]
 CMD ["./server"]
