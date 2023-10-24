@@ -61,7 +61,7 @@ resource "google_compute_global_forwarding_rule" "default" {
 
   name                  = "${var.name}-forwarding-rule"
   load_balancing_scheme = "EXTERNAL"
-  port_range            = "50051"
+  port_range            = "80"
 
   target     = google_compute_target_tcp_proxy.default.self_link
   ip_address = google_compute_global_address.default.address
