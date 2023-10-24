@@ -5,7 +5,7 @@ resource "google_compute_health_check" "default" {
   healthy_threshold   = 2
   unhealthy_threshold = 2
 
-  grpc_health_check {
+  http_health_check {
     port = 8080
   }
 }
@@ -33,8 +33,8 @@ resource "google_compute_backend_service" "default" {
 resource "google_compute_target_tcp_proxy" "default" {
   depends_on = [google_compute_backend_service.default]
 
-  name             = "${var.name}-target-tcp-proxy"
-  backend_service  = google_compute_backend_service.default.self_link
+  name            = "${var.name}-target-tcp-proxy"
+  backend_service = google_compute_backend_service.default.self_link
 }
 
 resource "google_compute_global_address" "default" {
